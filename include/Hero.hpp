@@ -16,16 +16,21 @@
 #include "Drawable.hpp"
 #include "Projectile.hpp"
 
+#define HERO_START_FACING SOUTH
+
 namespace GLogic {
     class Hero: public Drawable {
     public:
         Projectile* fireToCoordinate(Point point);
         void walk(Direction dir);
-        Point getLocationX();
-        GameObject* getGameObject();//return the gameobject of the facing carinha
-        Hero(GameObject* gamObj[]);//need the 6 facets
+        Point getLocation();
+        GameObject* getGameObject(); //return the gameobject of the facing carinha
+        Hero(GameObject* gamObj[], int limitMatrix); //need the 6 facets
     private:
         Point location;
+        GameObject* gameObj[8];
+        Direction currentFacing;
+        int limitMatrix;
     };
 }
 

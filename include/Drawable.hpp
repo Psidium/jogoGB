@@ -17,7 +17,7 @@
 class Drawable {
 public:
     std::vector<Point> getDrawablePoints();
-    virtual GameObject* getGameObject();
+    virtual GameObject* getGameObject() = 0;
 };
 
 #endif /* Drawable_hpp */

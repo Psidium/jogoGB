@@ -26,6 +26,7 @@ namespace GLogic {
         Point getLocation();
         GameObject* getGameObject();
         Projectile(GameObject* gamObj);
+        void tick();
         ~Projectile();
         static std::map<SignElement, GameObject*> signToProjectile;
     private:
@@ -35,6 +36,7 @@ namespace GLogic {
         Point target;
         int numberOfMidpoints;
         int round;
+        Point currentLocation;
     };
 }
 

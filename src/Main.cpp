@@ -28,6 +28,8 @@
 #include "slidemap_help.hpp"
 
 #include "GLEnums.hpp"
+#include "Projectile.hpp"
+#include "Enemy.hpp"
 
 #define VIEWPORT_X 900
 #define VIEWPORT_Y 450
