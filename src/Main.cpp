@@ -82,7 +82,7 @@ void init(void)
     /*  initialize viewing values  */
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0.0, VIEWPORT_X, 0.0, VIEWPORT_Y, -VIEWPORT_X, VIEWPORT_Y);
+    glOrtho(0.0, VIEWPORT_X, -VIEWPORT_Y/2 - 10, VIEWPORT_Y/2 + 10, -VIEWPORT_X, VIEWPORT_Y);
 }
 
 
@@ -122,17 +122,17 @@ void specialUp(int key, int x, int y) {
 }
 
 void draw_losang(int x, int y, int log_width, int log_height) {
-    //x and y are the center point of the losang of width and height
-    glVertex2f(x - log_width/2.0f, y); //x on the leftmost, y on center
-    glVertex2f(x, y + log_height/2.0f);
+    //x and y are the lower left point of the losang of width and height
+    glVertex2f(x, y + log_height/2.0f); //x on the leftmost, y on center
+    glVertex2f(x + log_width/2.0f, y + log_height);
+    glVertex2f(x + log_width, y + log_height/2.0f);
     glVertex2f(x + log_width/2.0f, y);
-    glVertex2f(x, y - log_height/2.0f);
 }
 
-void calculate_losang_center_point(int* x, int* y, int collumn, int row, int log_width, int log_height, int x_offset, int y_offset) {
+void calculate_losang_lower_left_point(int* x, int* y, int collumn, int row, int log_width, int log_height) {
     //sor quer que mude pra ponto inferior esquerdo
-    *x = collumn * log_width/2 + row * log_width/2 + x_offset;
-    *y = collumn * log_height/2 - row * log_height/2 + y_offset;
+    *x = collumn * log_width/2 + row * log_width/2;
+    *y = collumn * log_height/2 - row * log_height/2;
 }
 
 void display(){
@@ -148,7 +148,7 @@ void display(){
         for (int j = (int) tile_map[i].size() - 1; j >= 0; j--) {
             const QuickColor quick_color = *tile_map[i][j];
             glColor3ub(quick_color.r, quick_color.g, quick_color.b);
-            calculate_losang_center_point(x, y, i, j, log_width, log_height, TILE_MAP_WIDTH/2, VIEWPORT_Y/2);
+            calculate_losang_lower_left_point(x, y, i, j, log_width, log_height);
             if (*x < 0) {
                 wait(NULL);
             }
