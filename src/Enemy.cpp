@@ -10,12 +10,14 @@
 
 using namespace GLogic;
 
+std::map<Sign,GameObject*> Enemy::signToGO;
+
 Point Enemy::getLocation() {
     return location;
 }
 
 GameObject* Enemy::getGameObject() {
-    return signToGO[sign];
+    return Enemy::signToGO[sign];
 }
 
 bool Enemy::receiveDamage(Projectile proj) {

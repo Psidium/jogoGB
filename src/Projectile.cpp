@@ -11,12 +11,20 @@
 
 using namespace GLogic;
 
+
+std::map<SignElement,GameObject*> signToProjectile;
+
+GameObject* Projectile::getGameObject() {
+    return Projectile::signToProjectile[elem];
+}
+
 Sign Projectile::getSign() {
     return sign;
 }
 
 Projectile::Projectile(Sign sign, Point source, Point target) {
     this->sign = sign;
+    this->elem = getElementOfSign(sign);
     this->source = source;
     this->target = target;
     float d = sqrt((source.x-target.x)^2 + (source.y-target.y)^2);
@@ -25,8 +33,8 @@ Projectile::Projectile(Sign sign, Point source, Point target) {
 
 Point Projectile::getLocation() {
     Point during;
-    during.x = round*(source.x+target.x) / numberOfMidpoints;
-    during.y = round*(source.y+target.y) / numberOfMidpoints;
-    round ;
+    during.x = (int)((float)round*(source.x+target.x) / numberOfMidpoints);
+    during.y = (int)((float)round*(source.y+target.y) / numberOfMidpoints);
+    round++;
     return during;
 }
