@@ -24,11 +24,11 @@ namespace GLogic {
         Projectile* fireToCoordinate(Point point);
         void walk(Direction dir);
         Point getLocation();
-        GameObject* getGameObject(); //return the gameobject of the facing carinha
-        Hero(GameObject* gamObj[], int limitMatrix); //need the 6 facets
+        int getTextureID(); //return the gameobject of the facing carinha
+        Hero(int gamObj[], int limitMatrix); //need the 6 facets
     private:
         Point location;
-        GameObject* gameObj[8];
+        int gameObj[8];
         Direction currentFacing;
         int limitMatrix;
     };

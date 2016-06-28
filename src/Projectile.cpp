@@ -12,9 +12,9 @@
 using namespace GLogic;
 
 
-std::map<SignElement,GameObject*> Projectile::signToProjectile;
+std::map<SignElement,int> Projectile::signToProjectile;
 
-GameObject* Projectile::getGameObject() {
+int Projectile::getTextureID() {
     return Projectile::signToProjectile[elem];
 }
 

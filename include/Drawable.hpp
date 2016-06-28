@@ -16,8 +16,7 @@
 
 class Drawable {
 public:
-    std::vector<Point> getDrawablePoints();
-    virtual GameObject* getGameObject() = 0;
+    virtual int getTextureID() = 0;
 };
 
 #endif /* Drawable_hpp */

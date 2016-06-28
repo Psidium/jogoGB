@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include "GLEnums.hpp"
 #include "Point.hpp"
-#include "GameObject.hpp"
 #include "Drawable.hpp"
 #include "Projectile.hpp"
 #include "PointControl.hpp"
@@ -22,11 +21,13 @@ namespace GLogic {
     class Enemy: public Drawable {
     public:
         Point getLocation();
-        GameObject* getGameObject();
+        virtual int getTextureID() = 0;
+
         bool receiveDamage(Projectile proj);
         void tick();
         Enemy(Sign sign, Point loc, int tickCount, PointControl* points);
-        static std::map<Sign, GameObject*> signToGO;
+        static std::map<Sign, int> signToGO;
+        
     private:
         int ticker, tickCount, currentHp;
         Point location;

@@ -19,16 +19,15 @@
 #define PROJECTILE_SPEED 100
 
 namespace GLogic {
-    class Projectile: public Drawable {
+    class Projectile {
     public:
         Projectile(Sign sign, Point source, Point target);
         Sign getSign();
         Point getLocation();
-        GameObject* getGameObject();
-        Projectile(GameObject* gamObj);
+        int getTextureID();
         void tick();
         ~Projectile();
-        static std::map<SignElement, GameObject*> signToProjectile;
+        static std::map<SignElement, int> signToProjectile;
     private:
         Sign sign;
         SignElement elem;
