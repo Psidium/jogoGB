@@ -11,6 +11,6 @@ add_executable(mainOut ${SOURCES})
 
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
-include_directories(include ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
-
-target_link_libraries(mainOut ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} )
+find_package(PNG REQUIRED)
+include_directories(include ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} ${PNG_INCLUDE_DIR})
+target_link_libraries(mainOut ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${PNG_LIBRARY})

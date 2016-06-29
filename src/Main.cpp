@@ -34,12 +34,16 @@
 #include "Hero.hpp"
 #include "GLenums.hpp"
 
-#define VIEWPORT_X 900
-#define VIEWPORT_Y 450
+#include "png_texture.h"
 
-#define TILE_MAP_WIDTH 90
-#define TILE_MAP_HEIGHT 45
-#define TILE_MAP_SIZE 7
+
+#define TILE_MAP_WIDTH 200
+#define TILE_MAP_HEIGHT TILE_MAP_WIDTH/2
+#define TILE_MAP_SIZE 5
+
+#define VIEWPORT_X TILE_MAP_WIDTH * TILE_MAP_SIZE
+#define VIEWPORT_Y TILE_MAP_HEIGHT * TILE_MAP_SIZE
+
 
 
 struct TileColor {
@@ -48,10 +52,25 @@ struct TileColor {
      b;
 };
 
+typedef struct {
+    float x;
+    float y;
+} Pointf;
 
-std::vector<std::vector<TileColor*> > tile_map;
+struct SpriteId {
+    Pointf lower_left = {0, 0};
+    Pointf upper_left = {0,1};
+    Pointf upper_right = {1,1};
+    Pointf lower_right = {1, 0};
+    bool hidden = false;
+};
+
+std::vector<std::vector<SpriteId> > fix_ground_ids;
 
 std::vector<GLogic::Projectile> projectiles;
+int ground_id;
+int sprite_id;
+
 GLuint* ids;
 
 GLogic::Hero* hero;
@@ -63,25 +82,59 @@ void init(void)
     
     
     
-    tile_map.resize(TILE_MAP_SIZE);
-    for (int i = 0 ; i < tile_map.size(); i++ ) {
-        tile_map[i].resize(TILE_MAP_SIZE);
-    }
+    ground_id = png_texture_load("chao_tex.png", NULL, NULL);
     
-    bool eita = true;
-    for (int x = 0; x < tile_map.size(); x++) {
-        for (int y =0; y < tile_map[x].size(); y++) {
-            TileColor *quick_color = new TileColor();
-            quick_color->r = 255;
-            quick_color->g = 255;
-            quick_color->b = 255;
-            tile_map[x][y] = quick_color;
+    
+    fix_ground_ids.resize(TILE_MAP_SIZE);
+    for (int i = 0 ; i < fix_ground_ids.size(); i++ ) {
+        fix_ground_ids[i].resize(TILE_MAP_SIZE);
+        for (int j =0; j< TILE_MAP_SIZE; j++) {
+            fix_ground_ids[i][j].hidden = true;
+        }
+    }
+    sprite_id = png_texture_load("sprite_signos.png", NULL, NULL);
+    
+    /*
+     [ [0,2], [1,2], [2,2], [3,2]
+       [0,1], [1,1], [2,1], [3,1]
+       [0,0], [1,0], [2,0], [3,0] ]
+     */
+    std::vector<SpriteId*> selected_tiles(12);
+    selected_tiles[0] = &fix_ground_ids[4][2];//sagitario
+    selected_tiles[1] = &fix_ground_ids[1][4];//leao
+    selected_tiles[2] = &fix_ground_ids[1][0];//aries
+    selected_tiles[3] = &fix_ground_ids[4][1];//capricornio
+    selected_tiles[4] = &fix_ground_ids[2][4];//virgem
+    selected_tiles[5] = &fix_ground_ids[0][1];//touro
+    selected_tiles[6] = &fix_ground_ids[3][0];//acuario
+    selected_tiles[7] = &fix_ground_ids[3][4];//libra
+    selected_tiles[8] = &fix_ground_ids[0][2];//gemeos
+    selected_tiles[9] = &fix_ground_ids[2][0];//peixes
+    selected_tiles[10] = &fix_ground_ids[4][3];//escorpiao
+    selected_tiles[11] = &fix_ground_ids[0][3];//cancer
+    int k = 0;
+    float sprite_height = 1/3.0f;
+    float sprite_width = 1/4.0f;
+    for (int i = 0; i < 4; i++) {
+        for (int j =0; j < 3; j++){
+            selected_tiles[k]->lower_left.x = i * sprite_width;
+            selected_tiles[k]->lower_left.y = j * sprite_height;
+            selected_tiles[k]->upper_left.x = i * sprite_width;
+            selected_tiles[k]->upper_left.y = (j+1) * sprite_height;
+            selected_tiles[k]->lower_right.x = (i+1) * sprite_width;
+            selected_tiles[k]->lower_right.y = j * sprite_height;
+            selected_tiles[k]->upper_right.x = (i+1) * sprite_width;
+            selected_tiles[k]->upper_right.y = (j+1) * sprite_height;
+            selected_tiles[k]->hidden = false;
+            k++;
         }
     }
     
-    ids = (GLuint*) calloc(2,sizeof(GLuint));
-    char* filenames[] = {"bichooo_bin.ptm", "mapa.ptm"};
-    const int texLength = 2;
+    //============= UNUSED SO FAR
+    ids = (GLuint*) calloc(3,sizeof(GLuint));
+    
+    char* filenames[] = {"bichooo_bin.ptm"};
+    const int texLength = 1;
     glGenTextures(texLength, ids);
     for (int i = 0; i < texLength; i++) {
         Image* image = readImage(filenames[i]);
@@ -91,20 +144,23 @@ void init(void)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->getWidth(), image->getHeight(), 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, image->getPixels());
     }
     
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
     int foo[8];
     for (int i =0; i< 8; i++) {
         foo[i] = ids[0];
     }
     hero = new GLogic::Hero(foo, 15);
     
+    
+    // ================= END OF UNUSED
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    
     /*  initialize viewing values  */
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0.0, VIEWPORT_X, -VIEWPORT_Y/2 - 10, VIEWPORT_Y/2 + 10, -VIEWPORT_X, VIEWPORT_Y);
+    glOrtho(0.0, VIEWPORT_X, -VIEWPORT_Y/2 + TILE_MAP_HEIGHT/2, VIEWPORT_Y/2 + TILE_MAP_HEIGHT/2, -VIEWPORT_X, VIEWPORT_Y);
 }
 
 
@@ -159,16 +215,27 @@ void specialInput(int key, int x, int y) {
 void specialUp(int key, int x, int y) {
 }
 
-void draw_losang(int x, int y, int log_width, int log_height) {
+void draw_losang_line(int x, int y, int log_width, int log_height) {
+    glBegin(GL_LINE_LOOP);
     //x and y are the lower left point of the losang of width and height
-    glTexCoord2f(0,0);
     glVertex2f(x, y + log_height/2.0f); //x on the leftmost, y on center
-    glTexCoord2f(0, 1);
     glVertex2f(x + log_width/2.0f, y + log_height);
-    glTexCoord2f(1,1);
     glVertex2f(x + log_width, y + log_height/2.0f);
-    glTexCoord2f(1,0);
     glVertex2f(x + log_width/2.0f, y);
+    glEnd();
+}
+
+void draw_losang_tex(SpriteId sprite, int x, int y, int log_width, int log_height) {
+    glBegin(GL_POLYGON);
+    glTexCoord2f(sprite.lower_left.x,sprite.lower_left.y);
+    glVertex2f(x, y + log_height/2.0f);
+    glTexCoord2f(sprite.upper_left.x,sprite.upper_right.y);
+    glVertex2f(x + log_width/2.0f, y + log_height);
+    glTexCoord2f(sprite.upper_right.x,sprite.upper_right.y);
+    glVertex2f(x + log_width, y + log_height/2.0f);
+    glTexCoord2f(sprite.lower_right.x,sprite.lower_right.y);
+    glVertex2f(x + log_width/2.0f, y);
+    glEnd();
 }
 
 void calculate_losang_lower_left_point(int* x, int* y, int collumn, int row, int log_width, int log_height) {
@@ -184,38 +251,29 @@ void mouse(int button, int state, int mx, int my)
 void display(){
     glClear(GL_COLOR_BUFFER_BIT);
     
-    
-    glBindTexture(GL_TEXTURE_2D, ids[1]);
-    glBegin(GL_QUADS);
-    //x and y are the lower left point of the losang of width and height
-    glTexCoord2f(0,0);
-    glVertex2f(0, 0); //x on the leftmost, y on center
-    glTexCoord2f(0, 1);
-    glVertex2f(VIEWPORT_X/2.0f, VIEWPORT_Y/2.0f);
-    glTexCoord2f(1,1);
-    glVertex2f(VIEWPORT_X, 0);
-    glTexCoord2f(1,0);
-    glVertex2f(VIEWPORT_X/2.0f, -VIEWPORT_Y/2.0f);
-    glEnd();
-    
-    const int log_width = TILE_MAP_WIDTH;
-    const int log_height = TILE_MAP_HEIGHT;
     int* x = (int*) calloc(1, sizeof(int));
     int* y = (int*) calloc(1, sizeof(int));
     
-    glColor3ub(255, 255, 255);
-    
-    glBindTexture(GL_TEXTURE_2D, hero->getTextureID());
-    Point heroLocation = hero->getLocation();
-    calculate_losang_lower_left_point(x, y, heroLocation.x, heroLocation.y, log_width, log_height);
-    draw_losang(*x, *y, log_width, log_height);
-    
-    
-    
+    SpriteId sp_hold;
+    for (int i = 0; i < TILE_MAP_SIZE; i++) {
+        for (int j = (int) TILE_MAP_SIZE - 1; j >= 0; j--) {
+            glColor3ub(0, 0, 0);
+            calculate_losang_lower_left_point(x, y, i, j, TILE_MAP_WIDTH, TILE_MAP_HEIGHT);
+            draw_losang_line(*x, *y, TILE_MAP_WIDTH, TILE_MAP_HEIGHT);
+            glColor3ub(255, 255, 255);
+            glBindTexture(GL_TEXTURE_2D, ground_id);
+            draw_losang_tex(sp_hold, *x, *y, TILE_MAP_WIDTH, TILE_MAP_HEIGHT);
+            
+            if (!fix_ground_ids[i][j].hidden) {
+                glBindTexture(GL_TEXTURE_2D, sprite_id);
+                draw_losang_tex(fix_ground_ids[i][j], *x, *y, TILE_MAP_WIDTH, TILE_MAP_HEIGHT);
+            }
+        }
+    }
     
     glFlush();
     
-    glutPostRedisplay();
+    //glutPostRedisplay();
 }
 
 int main(int argc, char* argv[])
