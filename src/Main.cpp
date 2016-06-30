@@ -33,6 +33,7 @@
 #include "Enemy.hpp"
 #include "Hero.hpp"
 #include "GLenums.hpp"
+#include "SpriteId.hpp"
 
 #include "png_texture.h"
 
@@ -52,28 +53,16 @@ struct TileColor {
      b;
 };
 
-typedef struct {
-    float x;
-    float y;
-} Pointf;
-
-struct SpriteId {
-    Pointf lower_left = {0, 0};
-    Pointf upper_left = {0,1};
-    Pointf upper_right = {1,1};
-    Pointf lower_right = {1, 0};
-    bool hidden = false;
-};
-
 std::vector<std::vector<SpriteId> > fix_ground_ids;
 
 std::vector<GLogic::Projectile> projectiles;
+
 int ground_id;
-int sprite_id;
 
 GLuint* ids;
 
 GLogic::Hero* hero;
+
 void init(void)
 {
     /*  select clearing (background) color       */
@@ -92,7 +81,7 @@ void init(void)
             fix_ground_ids[i][j].hidden = true;
         }
     }
-    sprite_id = png_texture_load("sprite_signos.png", NULL, NULL);
+    int sprite_id = png_texture_load("sprite_signos.png", NULL, NULL);
     
     /*
      [ [0,2], [1,2], [2,2], [3,2]
@@ -126,32 +115,39 @@ void init(void)
             selected_tiles[k]->upper_right.x = (i+1) * sprite_width;
             selected_tiles[k]->upper_right.y = (j+1) * sprite_height;
             selected_tiles[k]->hidden = false;
+            selected_tiles[k]->texture = sprite_id;
             k++;
         }
     }
     
-    //============= UNUSED SO FAR
-    ids = (GLuint*) calloc(3,sizeof(GLuint));
-    
-    char* filenames[] = {"bichooo_bin.ptm"};
-    const int texLength = 1;
-    glGenTextures(texLength, ids);
-    for (int i = 0; i < texLength; i++) {
-        Image* image = readImage(filenames[i]);
-        glBindTexture(GL_TEXTURE_2D, ids[i]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->getWidth(), image->getHeight(), 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, image->getPixels());
-    }
-    
-    int foo[8];
+    int hero_id = png_texture_load("hero_sprite.png", NULL, NULL);
+    GameObject* h_objs[8];
+    sprite_width = 1/3.0f;
+    sprite_height = 1/8.0f;
+    float x_coords[4] = {0, sprite_width, 2*sprite_width, 3*sprite_width};
     for (int i =0; i< 8; i++) {
-        foo[i] = ids[0];
+        Animation* anim = new Animation(3);
+        for (int j=0; j<3; j++) {
+            SpriteId* sprite = new SpriteId;
+            sprite->hidden = false;
+            sprite->lower_left.x = x_coords[j];
+            sprite->lower_left.y = i * sprite_height;
+            sprite->upper_left.x = x_coords[j];
+            sprite->upper_left.y = (i+1) * sprite_height;
+            sprite->lower_right.x = x_coords[j+1];
+            sprite->lower_right.y = i * sprite_height;
+            sprite->upper_right.x = x_coords[j+1];
+            sprite->upper_right.y = (i+1) * sprite_height;
+            sprite->texture = hero_id;
+            anim->addFrame(sprite);
+        }
+        
+        h_objs[i] = new GameObject();
+        h_objs[i]->setSprite(anim);
     }
-    hero = new GLogic::Hero(foo, 15);
     
+    hero = new GLogic::Hero(h_objs, TILE_MAP_SIZE);
     
-    // ================= END OF UNUSED
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -226,10 +222,11 @@ void draw_losang_line(int x, int y, int log_width, int log_height) {
 }
 
 void draw_losang_tex(SpriteId sprite, int x, int y, int log_width, int log_height) {
+    glBindTexture(GL_TEXTURE_2D, sprite.texture);
     glBegin(GL_POLYGON);
     glTexCoord2f(sprite.lower_left.x,sprite.lower_left.y);
     glVertex2f(x, y + log_height/2.0f);
-    glTexCoord2f(sprite.upper_left.x,sprite.upper_right.y);
+    glTexCoord2f(sprite.upper_left.x,sprite.upper_left.y);
     glVertex2f(x + log_width/2.0f, y + log_height);
     glTexCoord2f(sprite.upper_right.x,sprite.upper_right.y);
     glVertex2f(x + log_width, y + log_height/2.0f);
@@ -238,6 +235,19 @@ void draw_losang_tex(SpriteId sprite, int x, int y, int log_width, int log_heigh
     glEnd();
 }
 
+void draw_rectangle_tex(SpriteId sprite, int x, int y, int width, int height) {
+    glBindTexture(GL_TEXTURE_2D, sprite.texture);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(sprite.lower_left.x,sprite.lower_left.y);
+    glVertex2f(x, y);
+    glTexCoord2f(sprite.upper_left.x,sprite.upper_left.y);
+    glVertex2f(x, y + height);
+    glTexCoord2f(sprite.upper_right.x,sprite.upper_right.y);
+    glVertex2f(x + width, y + height);
+    glTexCoord2f(sprite.lower_right.x,sprite.lower_right.y);
+    glVertex2f(x + width, y);
+    glEnd();
+}
 void calculate_losang_lower_left_point(int* x, int* y, int collumn, int row, int log_width, int log_height) {
     //sor quer que mude pra ponto inferior esquerdo
     *x = collumn * log_width/2 + row * log_width/2;
@@ -255,24 +265,29 @@ void display(){
     int* y = (int*) calloc(1, sizeof(int));
     
     SpriteId sp_hold;
+    sp_hold.texture = ground_id;
     for (int i = 0; i < TILE_MAP_SIZE; i++) {
         for (int j = (int) TILE_MAP_SIZE - 1; j >= 0; j--) {
             glColor3ub(0, 0, 0);
             calculate_losang_lower_left_point(x, y, i, j, TILE_MAP_WIDTH, TILE_MAP_HEIGHT);
             draw_losang_line(*x, *y, TILE_MAP_WIDTH, TILE_MAP_HEIGHT);
             glColor3ub(255, 255, 255);
-            glBindTexture(GL_TEXTURE_2D, ground_id);
             draw_losang_tex(sp_hold, *x, *y, TILE_MAP_WIDTH, TILE_MAP_HEIGHT);
             
             if (!fix_ground_ids[i][j].hidden) {
-                glBindTexture(GL_TEXTURE_2D, sprite_id);
                 draw_losang_tex(fix_ground_ids[i][j], *x, *y, TILE_MAP_WIDTH, TILE_MAP_HEIGHT);
             }
         }
     }
     
+    calculate_losang_lower_left_point(x, y, 0, 1, TILE_MAP_WIDTH, TILE_MAP_HEIGHT);
+    SpriteId* hero_now = hero->getGameObject()->getCurrentFrame();
+    draw_rectangle_tex(*hero_now, *x, *y, TILE_MAP_HEIGHT, (int) (TILE_MAP_HEIGHT*7.0f/8.0f));
+    
     glFlush();
     
+    free(x);
+    free(y);
     //glutPostRedisplay();
 }
 

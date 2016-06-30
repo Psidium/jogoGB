@@ -8,9 +8,7 @@
 
 #include "GameObject.hpp"
 
-GameObject::GameObject(int posX, int posY) {
-    this->posX = posX;
-    this->posY = posY;
+GameObject::GameObject() {
 }
 
 void GameObject::incCurrentFrame() {
@@ -21,6 +19,6 @@ void GameObject::setSprite(Animation* animtion) {
     this->animation = animtion;
 }
 
-Image* GameObject::getCurrentFrame() {
+SpriteId* GameObject::getCurrentFrame() {
     return this->animation->getFrame(this->currentFrame);
 }

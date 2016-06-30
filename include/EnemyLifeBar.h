@@ -1,3 +1,4 @@
+/*
 #include <GL\freeglut.h>
 #include <GL\GL.h>
 #include <GL\GLU.h>
@@ -18,4 +19,4 @@ public:
 private:
 	int life;
 };
-
+*/

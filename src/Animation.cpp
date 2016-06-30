@@ -12,11 +12,11 @@ Animation::Animation(int frameCount){
     this->frameCount = frameCount;
 }
 
-void Animation::addFrame(Image* frame) {
+void Animation::addFrame(SpriteId* frame) {
     this->frames.push_back(frame);
 }
 
-Image* Animation::getFrame(int frame) {
+SpriteId* Animation::getFrame(int frame) {
     return this->frames.at(frame);
 }
 
@@ -25,9 +25,5 @@ int Animation::getFrameCount() {
 }
 
 Animation::~Animation() {
-    //c++11 "for-each"-like
-    for (auto &image: this->frames) {
-        delete image;
-    }
     this->frames.clear();
 }

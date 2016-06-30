@@ -1,4 +1,4 @@
-#include "EnemyLifeBar.h"
+/*#include "EnemyLifeBar.h"
 #include <GL\freeglut.h>
 #include <GL\GL.h>
 #include <GL\GLU.h>
@@ -19,3 +19,5 @@ void EnemyLifeBar::setLife(int l){
 bool EnemyLifeBar::getIsDead(){
 	return (this->life <= 0);
 }
+
+*/

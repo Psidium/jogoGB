@@ -11,18 +11,16 @@
 
 #include <stdio.h>
 #include "Animation.hpp"
-#include "Image.hpp"
+#include "SpriteId.hpp"
 
 class GameObject {
 public:
-    GameObject(int posX, int posY);
+    GameObject();
     void incCurrentFrame();
     void setSprite(Animation* animtion);
-    Image* getCurrentFrame();
+    SpriteId* getCurrentFrame();
 private:
-    int currentFrame;
-    int posX;
-    int posY;
+    int currentFrame = 0;
     Animation* animation;
 };
 #endif /* GameObject_hpp */

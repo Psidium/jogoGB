@@ -57,11 +57,11 @@ Point Hero::getLocation() {
     return location;
 }
 
-int Hero::getTextureID() {
+GameObject* Hero::getGameObject() {
     return gameObj[currentFacing];
 }
 
-Hero::Hero(int gamObj[], int limitMatrix) {
+Hero::Hero(GameObject* gamObj[], int limitMatrix) {
     for (int i = 0; i< 8; i++) {
         this->gameObj[i] = gamObj[i];
     }

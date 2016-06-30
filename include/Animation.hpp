@@ -11,18 +11,18 @@
 
 #include <stdio.h>
 #include <vector>
-#include "Image.hpp"
+#include "SpriteId.hpp"
 
 class Animation {
 public:
-    void addFrame(Image* frame);
-    Image* getFrame(int frame);
+    void addFrame(SpriteId* frame);
+    SpriteId* getFrame(int frame);
     int getFrameCount();
     Animation(int frameCount);
     ~Animation();
 private:
     int frameCount;
-    std::vector<Image*> frames;
+    std::vector<SpriteId*> frames;
 };
 
 #endif /* Animation_hpp */

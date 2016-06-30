@@ -59,14 +59,14 @@ namespace GLogic {
     }
     
     enum Direction {
-        NORTH = 0,
-        SOUTH = 1,
+        NORTHEAST = 0,
+        WEST = 1,
         EAST = 2,
-        WEST = 3,
-        NORTHEAST = 4,
-        NORTHWEST = 5,
+        NORTH = 3,
+        NORTHWEST = 4,
+        SOUTHWEST = 5,
         SOUTHEAST = 6,
-        SOUTHWEST = 7
+        SOUTH = 7
     };
 }
 
