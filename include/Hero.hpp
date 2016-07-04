@@ -23,7 +23,7 @@
 namespace GLogic {
     class Hero {
     public:
-        Projectile* fireToCoordinate(Point point);
+        Projectile* fireToCoordinate(Point point, Sign proj_sign);
         void walk(Direction dir);
         void walkTo(Point target);
         Point getLocation();
@@ -32,6 +32,7 @@ namespace GLogic {
         Hero(GameObject* gamObj[], int limitMatrix); //need the 6 facets
         void setPixelLocation(Point pixelLocation);
         Point getPixelLocation();
+        void setLocation(Point point);
     private:
         Point pixelLocation;
         Point location;

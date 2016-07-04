@@ -12,8 +12,12 @@
 typedef struct Point {
     int x;
     int y;
-    bool operator== (const Point &c1) {
-        return (x == c1.x && y == c1.y);
+    friend bool operator== (const Point &c2, const Point &c1) {
+        return (c2.x == c1.x && c2.y == c1.y);
+    }
+    friend bool operator< (const Point &c1, const Point &c2) {
+        long maximum = 5000;
+        return (c1.x*maximum + c1.y < c2.x * maximum + c2.y );
     }
 } Point;
 

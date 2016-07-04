@@ -10,8 +10,11 @@
 
 using namespace GLogic;
 
-Projectile* Hero::fireToCoordinate(Point target) {
-    return new Projectile(LIBRA, location, target);
+Projectile* Hero::fireToCoordinate(Point target, Sign proj_sign) {
+    if (!walking) {
+        return new Projectile(proj_sign, pixelLocation, target);
+    }
+    return NULL;
 }
 
 void Hero::walkTo(Point target) {
@@ -52,8 +55,18 @@ void Hero::setPixelLocation(Point pixelLocation) {
     this->pixelLocation = pixelLocation;
 }
 
-Point Hero::getPixelLocation(){
+Point Hero::getPixelLocation() {
     return this->pixelLocation;
+}
+
+
+Point Hero::getLocation() {
+    return location;
+}
+
+
+void Hero::setLocation(Point point) {
+    this->location = point;
 }
 
 void Hero::tick() {
@@ -111,9 +124,6 @@ void Hero::walk(Direction dir) {
     }
 }
 
-Point Hero::getLocation() {
-    return location;
-}
 
 GameObject* Hero::getGameObject() {
     return gameObj[currentFacing];

@@ -12,11 +12,13 @@
 using namespace GLogic;
 
 
-std::map<SignElement,int> Projectile::signToProjectile;
+std::map<SignElement,SpriteId> Projectile::signToProjectile;
 
-int Projectile::getTextureID() {
+
+SpriteId Projectile::getSprite() {
     return Projectile::signToProjectile[elem];
 }
+
 
 Sign Projectile::getSign() {
     return sign;
@@ -27,24 +29,28 @@ Projectile::Projectile(Sign sign, Point source, Point target) {
     this->elem = getElementOfSign(sign);
     this->source = source;
     this->target = target;
-    float d = sqrt((source.x-target.x)^2 + (source.y-target.y)^2);
-    this->numberOfMidpoints = d/PROJECTILE_SPEED;
     this->currentLocation = source;
+    
+    
+    double d = sqrt(pow((target.x - source.x),2) + pow((target.y - source.y),2));
+    numberOfMidpoints = ceil(d/PROJECTILE_SPEED);
+    deltaPoint.x = (target.x - source.x)/ numberOfMidpoints;
+    deltaPoint.y = (target.y - source.y)/ numberOfMidpoints;
 }
 
 Point Projectile::getLocation() {
     return currentLocation;
 }
 
-void Projectile::tick() {
-    Point during;
-    during.x = (int)((float)round*(source.x+target.x) / numberOfMidpoints);
-    during.y = (int)((float)round*(source.y+target.y) / numberOfMidpoints);
+Projectile* Projectile::tick() {
     round++;
-    if (round > numberOfMidpoints) {
+    currentLocation.x += deltaPoint.x;
+    currentLocation.y += deltaPoint.y;
+    if (round - 4 > numberOfMidpoints) {
         delete this;
+        return NULL;
     }
-    currentLocation = during;
+    return this;
 }
 
 Projectile::~Projectile() {

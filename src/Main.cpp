@@ -51,13 +51,18 @@ GLogic::Enemy* active_enemy;
 GLogic::PointControl pointControl;
 std::vector<std::vector<SpriteId> > fix_ground_ids;
 
-std::vector<GLogic::Projectile> projectiles;
+GLogic::Projectile* projectile;
+
+std::map<Point, GLogic::Sign> signOfPoint;
 
 int ground_id;
 
 GLuint* ids;
 
 GLogic::Hero* hero;
+
+char* pontos = (char*)calloc(5, sizeof(char));
+
 
 void calculate_losang_lower_left_point(int* x, int* y, int collumn, int row, int log_width, int log_height) {
     *x = collumn * log_width/2 + row * log_width/2;
@@ -82,8 +87,8 @@ Point calculate_row_collumn_of_point(Point raw_point, int log_width, int log_hei
     int row, collumn;
     calculate_row_collumn_of_point(&row, &collumn, raw_point.x, raw_point.y, log_width, log_height);
     Point out;
-    out.x = row;
-    out.y = collumn;
+    out.y = row;
+    out.x = collumn;
     return out;
 }
 
@@ -148,7 +153,18 @@ void init(void)
         }
     }
     
-    
+    signOfPoint[(Point){4,2}] = GLogic::SAGITARIO;
+    signOfPoint[(Point){1,4}] = GLogic::LEAO;
+    signOfPoint[(Point){1,0}] = GLogic::ARIES;
+    signOfPoint[(Point){4,1}] = GLogic::CAPRICORNIO;
+    signOfPoint[(Point){2,4}] = GLogic::VIRGEM;
+    signOfPoint[(Point){0,1}] = GLogic::TOURO;
+    signOfPoint[(Point){3,0}] = GLogic::AQUARIO;
+    signOfPoint[(Point){3,4}] = GLogic::LIBRA;
+    signOfPoint[(Point){0,2}] = GLogic::GEMEOS;
+    signOfPoint[(Point){2,0}] = GLogic::PEIXES;
+    signOfPoint[(Point){4,3}] = GLogic::ESCORPIAO;
+    signOfPoint[(Point){0,3}] = GLogic::CANCER;
     
     
     //============================== load HERO
@@ -185,7 +201,7 @@ void init(void)
     heroLoc.x += TILE_MAP_WIDTH/4.0f;
     heroLoc.y += TILE_MAP_HEIGHT/3.0f;
     hero->setPixelLocation(heroLoc);
-    
+    hero->setLocation((Point) {0,1});
     
     
     /////============================ LOAD ENEMYS
@@ -214,7 +230,30 @@ void init(void)
     }
     active_enemy = new GLogic::Enemy(GLogic::LIBRA, (Point){ 2,2 }, 30, &pointControl);
     
-    delete active_enemy;
+    //================ LOAD PROJECTILE
+    
+    
+    int proj_id = png_texture_load("projectile_sprite.png", NULL, NULL);
+    k=0;
+    sprite_height = 1/2.0f;
+    sprite_width = 1/2.0f;
+    GLogic::SignElement elementos[] = {GLogic::AR, GLogic::AGUA, GLogic::TERRA, GLogic::FOGO};
+    for (int i=0; i< 2; i++) {
+        for (int j=0; j < 2; j++) {
+            SpriteId sprite;
+            sprite.lower_left.x = i * sprite_width;
+            sprite.lower_left.y = j * sprite_height;
+            sprite.upper_left.x = i * sprite_width;
+            sprite.upper_left.y = (j+1) * sprite_height;
+            sprite.lower_right.x = (i+1) * sprite_width;
+            sprite.lower_right.y = j * sprite_height;
+            sprite.upper_right.x = (i+1) * sprite_width;
+            sprite.upper_right.y = (j+1) * sprite_height;
+            sprite.hidden = false;
+            sprite.texture = proj_id;
+            GLogic::Projectile::signToProjectile[elementos[k++]] = sprite;
+        }
+    }
     
     
     glEnable(GL_TEXTURE_2D);
@@ -235,21 +274,13 @@ void reshape(int width, int height){
 
 void keyboard(unsigned char key, int x, int y){
     switch(key) {
-        case 'w':
-            break;
-        case 'a':
-            break;
-        case 's':
-            break;
-        case 'd':
-            break;
-        case 'q':
-            break;
-        case 'e':
-            break;
         case 'x':
-            break;
-        case 'z':
+            if (active_enemy != NULL) {
+                Point enemy_tile = calculate_losang_lower_left_point(active_enemy->getLocation(), TILE_MAP_WIDTH, TILE_MAP_HEIGHT);
+                enemy_tile.x += TILE_MAP_WIDTH/2.0f;
+                enemy_tile.y += TILE_MAP_HEIGHT/2.0f;
+                projectile = hero->fireToCoordinate(enemy_tile, signOfPoint[hero->getLocation()]);
+            }
             break;
     }
     glutPostRedisplay();
@@ -362,6 +393,17 @@ void tick_all(int value) {
     } else {
         active_enemy = new GLogic::Enemy(static_cast<GLogic::Sign>(rand() % 12), (Point){ (rand()%3) +1, (rand()%3) +1}, 30, &pointControl);
     }
+    if (projectile != NULL) {
+        projectile = projectile->tick();
+    }
+    if (active_enemy != NULL && projectile != NULL) {
+        active_enemy = active_enemy->receiveDamage(projectile, calculate_row_collumn_of_point(projectile->getLocation(), TILE_MAP_WIDTH, TILE_MAP_HEIGHT));
+        if (active_enemy == NULL) {
+            delete projectile;
+            projectile = NULL;
+        }
+    }
+    
     glutPostRedisplay();
     glutTimerFunc(60, tick_all, 0);
 }
@@ -384,6 +426,7 @@ void mouse(int button, int state, int mx, int my)
     heroLoc.x += TILE_MAP_WIDTH/4.0f;
     heroLoc.y += TILE_MAP_HEIGHT/3.0f;
     hero->walkTo(heroLoc);
+    hero->setLocation(selected_tile);
     //==== NAO PRECISO DO TESTE DE AREA DO TRIANGULO , NAO SEI PQ??????
     //pega x e y de inicio de desenho do losango
     //int log_x, log_y;
@@ -458,6 +501,21 @@ void display(){
         draw_rectangle_tex(active_enemy->getSprite(), enemy_source.x, enemy_source.y, TILE_MAP_HEIGHT, TILE_MAP_HEIGHT);
         
     }
+    
+    if (projectile != NULL) {
+        Point proj_loc = projectile->getLocation();
+        draw_rectangle_tex(projectile->getSprite(), proj_loc.x, proj_loc.y, 30, 30);
+    }
+    
+    
+    glColor4ub(0, 0, 0, 255);
+    glRasterPos2i(0,200);
+    sprintf(pontos, "%d pontos\n", pointControl.getPoints());
+    int charSize = strlen(pontos);
+    for (int i = 0; i< charSize; i++) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, (int)pontos[i]);
+    }
+    
     
     glFlush();
 }

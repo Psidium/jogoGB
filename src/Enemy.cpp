@@ -20,19 +20,25 @@ SpriteId Enemy::getSprite() {
     return Enemy::signToGO[sign];
 }
 
-bool Enemy::receiveDamage(Projectile proj) {
-    if (proj.getSign() == sign) {
+float Enemy::getCurrentHp() {
+    return (float)currentHp/ENEMY_MAXIMUM_HP;
+}
+Enemy* Enemy::receiveDamage(Projectile* proj, Point currentTile) {
+    if (!(currentTile == location)) {
+        return this;
+    }
+    if (proj->getSign() == sign) {
         points->addKill();
         delete this;
-        return true;
-    } else if (getElementOfSign(proj.getSign()) == elem) {
+        return NULL;
+    } else if (getElementOfSign(proj->getSign()) == elem) {
         if (--currentHp == 0) {
             points->addKill();
             delete this;
+            return NULL;
         }
-        return true;
     }
-    return false;
+    return this;
 }
 
 Enemy* Enemy::tick() {

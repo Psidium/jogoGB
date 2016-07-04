@@ -14,9 +14,10 @@
 #include "Point.hpp"
 #include "GameObject.hpp"
 #include "Drawable.hpp"
+#include "SpriteId.hpp"
 #include <map>
 
-#define PROJECTILE_SPEED 100
+#define PROJECTILE_SPEED 30
 
 namespace GLogic {
     class Projectile {
@@ -24,15 +25,16 @@ namespace GLogic {
         Projectile(Sign sign, Point source, Point target);
         Sign getSign();
         Point getLocation();
-        int getTextureID();
-        void tick();
+        SpriteId getSprite();
+        Projectile* tick();
         ~Projectile();
-        static std::map<SignElement, int> signToProjectile;
+        static std::map<SignElement, SpriteId> signToProjectile;
     private:
         Sign sign;
         SignElement elem;
         Point source;
         Point target;
+        Point deltaPoint;
         int numberOfMidpoints;
         int round;
         Point currentLocation;

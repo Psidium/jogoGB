@@ -17,14 +17,17 @@
 #include "PointControl.hpp"
 #include <map>
 
+#define ENEMY_MAXIMUM_HP 2
+
 namespace GLogic {
     class Enemy {
     public:
         Point getLocation();
         SpriteId getSprite();
 
-        bool receiveDamage(Projectile proj);
+        Enemy* receiveDamage(Projectile* proj, Point currentTile);
         Enemy* tick();
+        float getCurrentHp();
         Enemy(Sign sign, Point loc, int tickCount, PointControl* points);
         static std::map<Sign, SpriteId> signToGO;
         
