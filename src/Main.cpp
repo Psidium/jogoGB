@@ -63,6 +63,7 @@ GLogic::Hero* hero;
 
 char* pontos = (char*)calloc(5, sizeof(char));
 
+int lifebar_text;
 
 void calculate_losang_lower_left_point(int* x, int* y, int collumn, int row, int log_width, int log_height) {
     *x = collumn * log_width/2 + row * log_width/2;
@@ -256,6 +257,9 @@ void init(void)
     }
     
     
+    ///======================= LOAD LIFEBAR
+    lifebar_text = png_texture_load("lifebar_sprite.png", NULL, NULL);
+    
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -404,6 +408,16 @@ void tick_all(int value) {
         }
     }
     
+    if (active_enemy != NULL && hero != NULL) {
+        Point heroLoc = hero->getPixelLocation();
+        heroLoc.x += TILE_MAP_WIDTH/2.0f;
+        Point hero_current_tile = calculate_row_collumn_of_point(heroLoc, TILE_MAP_WIDTH, TILE_MAP_WIDTH);
+        Point enemy_current_tile = active_enemy->getLocation();
+        if (hero_current_tile == enemy_current_tile) {
+            //exit(0);
+        }
+    }
+    
     glutPostRedisplay();
     glutTimerFunc(60, tick_all, 0);
 }
@@ -499,6 +513,34 @@ void display(){
         enemy_source.x += TILE_MAP_WIDTH/4.0f;
         enemy_source.y += TILE_MAP_HEIGHT/3.0f;
         draw_rectangle_tex(active_enemy->getSprite(), enemy_source.x, enemy_source.y, TILE_MAP_HEIGHT, TILE_MAP_HEIGHT);
+        
+        //draw the lifebar
+        float hp_percentage = active_enemy->getCurrentHp();
+        glBindTexture(GL_TEXTURE_2D, lifebar_text);
+        
+        enemy_source.x += 30;
+        glBegin(GL_POLYGON);
+        glTexCoord2f(0.0f,0.5f);
+        glVertex2f(enemy_source.x, enemy_source.y);
+        glTexCoord2f(0.0f,1.0f);
+        glVertex2f(enemy_source.x, enemy_source.y + 10);
+        glTexCoord2f(hp_percentage,1.0f);
+        glVertex2f(enemy_source.x + 40 * hp_percentage, enemy_source.y + 10);
+        glTexCoord2f(hp_percentage,0.5f);
+        glVertex2f(enemy_source.x + 40 * hp_percentage, enemy_source.y);
+        glEnd();
+        if (hp_percentage < 1.0f) {
+            glBegin(GL_POLYGON);
+            glTexCoord2f(1.0f - hp_percentage,0.0f);
+            glVertex2f(enemy_source.x + 40 * hp_percentage, enemy_source.y);
+            glTexCoord2f(1.0f - hp_percentage,0.5f);
+            glVertex2f(enemy_source.x + 40 * hp_percentage, enemy_source.y + 10);
+            glTexCoord2f(1.0f,0.5f);
+            glVertex2f(enemy_source.x + 40, enemy_source.y + 10);
+            glTexCoord2f(1.0f,0.0f);
+            glVertex2f(enemy_source.x + 40, enemy_source.y);
+            glEnd();
+        }
         
     }
     
