@@ -24,7 +24,7 @@ namespace GLogic {
         SpriteId getSprite();
 
         bool receiveDamage(Projectile proj);
-        void tick();
+        Enemy* tick();
         Enemy(Sign sign, Point loc, int tickCount, PointControl* points);
         static std::map<Sign, SpriteId> signToGO;
         

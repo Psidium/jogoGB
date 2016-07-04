@@ -35,10 +35,12 @@ bool Enemy::receiveDamage(Projectile proj) {
     return false;
 }
 
-void Enemy::tick() {
+Enemy* Enemy::tick() {
     if (++ticker > tickCount) {
         delete this;
+        return NULL;
     }
+    return this;
 }
 
 Enemy::Enemy(Sign sign, Point loc, int tickCount, PointControl* points) {

@@ -214,7 +214,7 @@ void init(void)
     }
     active_enemy = new GLogic::Enemy(GLogic::LIBRA, (Point){ 2,2 }, 30, &pointControl);
     
-    
+    delete active_enemy;
     
     
     glEnable(GL_TEXTURE_2D);
@@ -357,6 +357,11 @@ void tick_all(int value) {
     if (hero != NULL) {
         hero->tick();
     }
+    if (active_enemy != NULL) {
+        active_enemy = active_enemy->tick();
+    } else {
+        active_enemy = new GLogic::Enemy(static_cast<GLogic::Sign>(rand() % 12), (Point){ (rand()%3) +1, (rand()%3) +1}, 30, &pointControl);
+    }
     glutPostRedisplay();
     glutTimerFunc(60, tick_all, 0);
 }
@@ -427,8 +432,6 @@ void display(){
                 glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, (int)pontos[i]);
             }
             free(pontos);
-
-            
         }
     }
     
