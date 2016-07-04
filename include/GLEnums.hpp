@@ -54,10 +54,6 @@ namespace GLogic {
         }
     }
     
-    static Sign currentStandingSign() {
-        return LIBRA;
-    }
-    
     enum Direction {
         NORTHEAST = 0,
         WEST = 1,

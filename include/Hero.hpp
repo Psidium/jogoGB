@@ -10,6 +10,7 @@
 #define Hero_hpp
 
 #include <stdio.h>
+#include <math.h>
 #include "GLEnums.hpp"
 #include "Point.hpp"
 #include "GameObject.hpp"
@@ -17,20 +18,30 @@
 #include "Projectile.hpp"
 
 #define HERO_START_FACING SOUTH
+#define HERO_SPEED 15 
 
 namespace GLogic {
     class Hero {
     public:
         Projectile* fireToCoordinate(Point point);
         void walk(Direction dir);
+        void walkTo(Point target);
         Point getLocation();
+        void tick();
         GameObject* getGameObject(); //return the gameobject of the facing carinha
         Hero(GameObject* gamObj[], int limitMatrix); //need the 6 facets
+        void setPixelLocation(Point pixelLocation);
+        Point getPixelLocation();
     private:
+        Point pixelLocation;
         Point location;
         GameObject* gameObj[8];
         Direction currentFacing;
         int limitMatrix;
+        Point target;
+        Point deltaPoint;
+        bool walking = false;
+        int steps, maximumSteps;
     };
 }
 

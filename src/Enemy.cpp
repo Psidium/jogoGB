@@ -10,13 +10,13 @@
 
 using namespace GLogic;
 
-std::map<Sign,int> Enemy::signToGO;
+std::map<Sign,SpriteId> Enemy::signToGO;
 
 Point Enemy::getLocation() {
     return location;
 }
 
-int Enemy::getTextureID() {
+SpriteId Enemy::getSprite() {
     return Enemy::signToGO[sign];
 }
 

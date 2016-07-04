@@ -18,15 +18,15 @@
 #include <map>
 
 namespace GLogic {
-    class Enemy: public Drawable {
+    class Enemy {
     public:
         Point getLocation();
-        virtual int getTextureID() = 0;
+        SpriteId getSprite();
 
         bool receiveDamage(Projectile proj);
         void tick();
         Enemy(Sign sign, Point loc, int tickCount, PointControl* points);
-        static std::map<Sign, int> signToGO;
+        static std::map<Sign, SpriteId> signToGO;
         
     private:
         int ticker, tickCount, currentHp;

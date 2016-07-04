@@ -11,9 +11,67 @@
 using namespace GLogic;
 
 Projectile* Hero::fireToCoordinate(Point target) {
-    return new Projectile(currentStandingSign(), location, target);
+    return new Projectile(LIBRA, location, target);
 }
 
+void Hero::walkTo(Point target) {
+    if (!walking) {
+        this->walking = true;
+        this->target = target;
+        //calculate facing
+        double angle = atan2(pixelLocation.y - target.y, pixelLocation.x - target.x) * 180 / M_PI;
+        if (angle < 0) {
+            angle += 360;
+        }
+        if (22.5f >= angle || angle > 337.5f) {
+                this->currentFacing = WEST;
+        } else if (67.5 >= angle) {
+                this->currentFacing = NORTHWEST;
+        } else if (112.5 >= angle) {
+                this->currentFacing = NORTH;
+        } else if (157.5f >= angle) {
+                this->currentFacing = NORTHEAST;
+        } else if (202.5f >= angle) {
+            this->currentFacing = EAST;
+        } else if (247.5f >= angle) {
+                this->currentFacing = SOUTHEAST;
+        } else if (292.5f >= angle) {
+                this->currentFacing = SOUTH;
+        } else if (337.5f >= angle) {
+                this->currentFacing = SOUTHWEST;
+        }
+        steps = 0;
+        double d = sqrt(pow((target.x - pixelLocation.x),2) + pow((target.y - pixelLocation.y),2));
+        maximumSteps = ceil(d/HERO_SPEED);
+        deltaPoint.x = (target.x - pixelLocation.x)/ maximumSteps;
+        deltaPoint.y = (target.y - pixelLocation.y)/ maximumSteps;
+    }
+}
+
+void Hero::setPixelLocation(Point pixelLocation) {
+    this->pixelLocation = pixelLocation;
+}
+
+Point Hero::getPixelLocation(){
+    return this->pixelLocation;
+}
+
+void Hero::tick() {
+    if (walking) {
+        getGameObject()->incCurrentFrame();
+        pixelLocation.x += deltaPoint.x;
+        pixelLocation.y += deltaPoint.y;
+        steps++;
+        if (target == pixelLocation || steps >= maximumSteps) {
+            walking = false;
+            deltaPoint.x = 0;
+            deltaPoint.y = 0;
+            steps = 0;
+            //avoid any off-by-one
+            pixelLocation = target;
+        }
+    }
+}
 
 void Hero::walk(Direction dir) {
     this->currentFacing = dir;
@@ -48,7 +106,7 @@ void Hero::walk(Direction dir) {
             loc.x--;
             break;
     }
-    if (!(loc.x < 0 | loc.y < 0 | loc.x > this->limitMatrix | loc.y > this->limitMatrix)) {
+    if (!(loc.x < 0 | loc.y < 0 | loc.x >= this->limitMatrix | loc.y >= this->limitMatrix)) {
         this->location = loc;
     }
 }
